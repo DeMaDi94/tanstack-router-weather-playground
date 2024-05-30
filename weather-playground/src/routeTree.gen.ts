@@ -11,11 +11,17 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as WeatherImport } from './routes/weather'
 import { Route as IndexImport } from './routes/index'
 import { Route as WeatherIndexImport } from './routes/weather/index'
 import { Route as WeatherLatLngIndexImport } from './routes/weather/$lat/$lng/index'
 
 // Create/Update Routes
+
+const WeatherRoute = WeatherImport.update({
+  path: '/weather',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   path: '/',
@@ -23,13 +29,13 @@ const IndexRoute = IndexImport.update({
 } as any)
 
 const WeatherIndexRoute = WeatherIndexImport.update({
-  path: '/weather/',
-  getParentRoute: () => rootRoute,
+  path: '/',
+  getParentRoute: () => WeatherRoute,
 } as any)
 
 const WeatherLatLngIndexRoute = WeatherLatLngIndexImport.update({
-  path: '/weather/$lat/$lng/',
-  getParentRoute: () => rootRoute,
+  path: '/$lat/$lng/',
+  getParentRoute: () => WeatherRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -43,19 +49,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/weather/': {
-      id: '/weather/'
+    '/weather': {
+      id: '/weather'
       path: '/weather'
       fullPath: '/weather'
-      preLoaderRoute: typeof WeatherIndexImport
+      preLoaderRoute: typeof WeatherImport
       parentRoute: typeof rootRoute
+    }
+    '/weather/': {
+      id: '/weather/'
+      path: '/'
+      fullPath: '/weather/'
+      preLoaderRoute: typeof WeatherIndexImport
+      parentRoute: typeof WeatherImport
     }
     '/weather/$lat/$lng/': {
       id: '/weather/$lat/$lng/'
-      path: '/weather/$lat/$lng'
+      path: '/$lat/$lng'
       fullPath: '/weather/$lat/$lng'
       preLoaderRoute: typeof WeatherLatLngIndexImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof WeatherImport
     }
   }
 }
@@ -64,8 +77,10 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexRoute,
-  WeatherIndexRoute,
-  WeatherLatLngIndexRoute,
+  WeatherRoute: WeatherRoute.addChildren({
+    WeatherIndexRoute,
+    WeatherLatLngIndexRoute,
+  }),
 })
 
 /* prettier-ignore-end */
